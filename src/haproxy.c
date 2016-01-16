@@ -1629,7 +1629,7 @@ static struct task *manage_global_listener_queue(struct task *t)
 	return t;
 }
 
-int main(int argc, char **argv)
+int haproxy_main(int argc, char **argv)
 {
 	int err, retry;
 	struct rlimit limit;

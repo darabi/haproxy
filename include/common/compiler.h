@@ -103,5 +103,9 @@
 #endif
 #endif
 
+/*
+ * Declaration for the original main() function
+ */
+int haproxy_main(int argc, char **argv);
 
 #endif /* _COMMON_COMPILER_H */

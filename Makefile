@@ -91,6 +91,7 @@
 DESTDIR =
 PREFIX = /usr/local
 SBINDIR = $(PREFIX)/sbin
+LIBDIR = $(PREFIX)/lib
 MANDIR = $(PREFIX)/share/man
 DOCDIR = $(PREFIX)/doc/haproxy
 
@@ -126,7 +127,7 @@ DEBUG_CFLAGS = -g
 #### Compiler-specific flags that may be used to disable some negative over-
 # optimization or to silence some warnings. -fno-strict-aliasing is needed with
 # gcc >= 4.4.
-SPEC_CFLAGS = -fno-strict-aliasing -Wdeclaration-after-statement
+SPEC_CFLAGS = -fPIC -fno-strict-aliasing -Wdeclaration-after-statement
 
 #### Memory usage tuning
 # If small memory footprint is required, you can reduce the buffer size. There
@@ -731,7 +732,7 @@ else
 all: haproxy $(EXTRA)
 endif
 
-OBJS = src/haproxy.o src/base64.o src/protocol.o \
+OBJS = src/main.o src/haproxy.o src/base64.o src/protocol.o \
        src/uri_auth.o src/standard.o src/buffer.o src/log.o src/task.o \
        src/chunk.o src/channel.o src/listener.o src/lru.o src/xxhash.o \
        src/time.o src/fd.o src/pipe.o src/regex.o src/cfgparse.o src/server.o \
@@ -760,7 +761,9 @@ WRAPPER_OBJS = src/haproxy-systemd-wrapper.o
 LIB_EBTREE = $(EBTREE_DIR)/libebtree.a
 
 haproxy: $(OBJS) $(OPTIONS_OBJS) $(EBTREE_OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(LDOPTS)
+	$(LD) -shared -Wl,-soname,libhaproxy.so.1 -L. $(LDFLAGS) -o libhaproxy.so.$(VERSION) $^ $(LDOPTS)
+	ln -s libhaproxy.so.$(VERSION) libhaproxy.so
+	$(LD) $(LDFLAGS) -L. -o $@ src/main.o -lhaproxy $(LDOPTS)
 
 haproxy-systemd-wrapper: $(WRAPPER_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^ $(LDOPTS)
@@ -810,6 +813,9 @@ install-doc:
 
 install-bin: haproxy $(EXTRA)
 	install -d "$(DESTDIR)$(SBINDIR)"
+	install -d "$(DESTDIR)$(LIBDIR)"
+	install libhaproxy.so.$(VERSION) "$(DESTDIR)$(LIBDIR)"
+	ln -rs "$(DESTDIR)$(LIBDIR)/libhaproxy.so.$(VERSION)" "$(DESTDIR)$(LIBDIR)/libhaproxy.so.1"
 	install haproxy $(EXTRA) "$(DESTDIR)$(SBINDIR)"
 
 install: install-bin install-man install-doc
@@ -829,6 +835,7 @@ clean:
 	rm -f haproxy-$(VERSION).tar.gz haproxy-$(VERSION)$(SUBVERS).tar.gz
 	rm -f haproxy-$(VERSION) haproxy-$(VERSION)$(SUBVERS) nohup.out gmon.out
 	rm -f haproxy-systemd-wrapper
+	rm -f libhaproxy*
 
 tags:
 	find src include \( -name '*.c' -o -name '*.h' \) -print0 | \
