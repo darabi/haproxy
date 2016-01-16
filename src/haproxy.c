@@ -25,106 +25,11 @@
  *
  */
 
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <sys/resource.h>
-#include <sys/wait.h>
-#include <time.h>
-#include <syslog.h>
-#include <grp.h>
-#ifdef USE_CPU_AFFINITY
-#include <sched.h>
-#ifdef __FreeBSD__
-#include <sys/param.h>
-#include <sys/cpuset.h>
-#endif
-#endif
-
-#ifdef DEBUG_FULL
-#include <assert.h>
-#endif
-
-#include <common/base64.h>
-#include <common/cfgparse.h>
-#include <common/chunk.h>
-#include <common/compat.h>
-#include <common/config.h>
-#include <common/defaults.h>
-#include <common/errors.h>
-#include <common/memory.h>
-#include <common/mini-clist.h>
-#include <common/namespace.h>
-#include <common/regex.h>
-#include <common/standard.h>
-#include <common/time.h>
-#include <common/uri_auth.h>
-#include <common/version.h>
-
-#include <types/capture.h>
-#include <types/global.h>
-#include <types/acl.h>
-#include <types/peers.h>
-
-#include <proto/acl.h>
-#include <proto/applet.h>
-#include <proto/arg.h>
-#include <proto/auth.h>
-#include <proto/backend.h>
-#include <proto/channel.h>
-#include <proto/checks.h>
-#include <proto/connection.h>
-#include <proto/fd.h>
-#include <proto/hdr_idx.h>
-#include <proto/hlua.h>
-#include <proto/listener.h>
-#include <proto/log.h>
-#include <proto/pattern.h>
-#include <proto/protocol.h>
-#include <proto/proto_http.h>
-#include <proto/proxy.h>
-#include <proto/queue.h>
-#include <proto/server.h>
-#include <proto/session.h>
-#include <proto/stream.h>
-#include <proto/signal.h>
-#include <proto/task.h>
-#include <proto/dns.h>
-
-#ifdef USE_OPENSSL
-#include <proto/ssl_sock.h>
-#endif
-
-#ifdef USE_DEVICEATLAS
-#include <import/da.h>
-#endif
-
-#ifdef USE_51DEGREES
-#include <import/51d.h>
-#endif
-
-/*********************************************************************/
-
-extern const struct comp_algo comp_algos[];
-
-/*********************************************************************/
+#include <haproxy.h>
 
 /* list of config files */
-static struct list cfg_cfgfiles = LIST_HEAD_INIT(cfg_cfgfiles);
+struct list cfg_cfgfiles = LIST_HEAD_INIT(cfg_cfgfiles);
+
 int  pid;			/* current process id */
 int  relative_pid = 1;		/* process id starting at 1 */
 
@@ -212,8 +117,8 @@ int jobs = 0;   /* number of active jobs (conns, listeners, active tasks, ...) *
  * our ports. With 200 retries, that's about 2 seconds.
  */
 #define MAX_START_RETRIES	200
-static int *oldpids = NULL;
-static int oldpids_sig; /* use USR1 or TERM */
+int *oldpids = NULL;
+int oldpids_sig; /* use USR1 or TERM */
 
 /* this is used to drain data, and as a temporary buffer for sprintf()... */
 struct chunk trash = { };

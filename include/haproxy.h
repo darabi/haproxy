@@ -124,125 +124,27 @@ extern const struct comp_algo comp_algos[];
 /*********************************************************************/
 
 /* list of config files */
-static struct list cfg_cfgfiles = LIST_HEAD_INIT(cfg_cfgfiles);
-int  pid;			/* current process id */
-int  relative_pid = 1;		/* process id starting at 1 */
+extern struct list cfg_cfgfiles;
+
+extern int  pid;			/* current process id */
+extern int  relative_pid;		/* process id starting at 1 */
 
 /* global options */
-struct global global = {
-	.nbproc = 1,
-	.req_count = 0,
-	.logsrvs = LIST_HEAD_INIT(global.logsrvs),
-#if defined(USE_ZLIB) && defined(DEFAULT_MAXZLIBMEM)
-	.maxzlibmem = DEFAULT_MAXZLIBMEM * 1024U * 1024U,
-#else
-	.maxzlibmem = 0,
-#endif
-	.comp_rate_lim = 0,
-	.ssl_server_verify = SSL_SERVER_VERIFY_REQUIRED,
-	.unix_bind = {
-		 .ux = {
-			 .uid = -1,
-			 .gid = -1,
-			 .mode = 0,
-		 }
-	},
-	.tune = {
-		.bufsize = BUFSIZE,
-		.maxrewrite = -1,
-		.chksize = BUFSIZE,
-		.reserved_bufs = RESERVED_BUFS,
-		.pattern_cache = DEFAULT_PAT_LRU_SIZE,
-#ifdef USE_OPENSSL
-		.sslcachesize = SSLCACHESIZE,
-		.ssl_default_dh_param = SSL_DEFAULT_DH_PARAM,
-#ifdef DEFAULT_SSL_MAX_RECORD
-		.ssl_max_record = DEFAULT_SSL_MAX_RECORD,
-#endif
-		.ssl_ctx_cache = DEFAULT_SSL_CTX_CACHE,
-#endif
-#ifdef USE_ZLIB
-		.zlibmemlevel = 8,
-		.zlibwindowsize = MAX_WBITS,
-#endif
-		.comp_maxlevel = 1,
-#ifdef DEFAULT_IDLE_TIMER
-		.idle_timer = DEFAULT_IDLE_TIMER,
-#else
-		.idle_timer = 1000, /* 1 second */
-#endif
-	},
-#ifdef USE_OPENSSL
-#ifdef DEFAULT_MAXSSLCONN
-	.maxsslconn = DEFAULT_MAXSSLCONN,
-#endif
-#endif
-#ifdef USE_DEVICEATLAS
-	.deviceatlas = {
-		.loglevel = 0,
-		.jsonpath = 0,
-		.cookiename = 0,
-		.cookienamelen = 0,
-		.useragentid = 0,
-		.daset = 0,
-		.separator = '|',
-	},
-#endif
-#ifdef USE_51DEGREES
-	._51degrees = {
-		.property_separator = ',',
-		.property_names = LIST_HEAD_INIT(global._51degrees.property_names),
-		.data_file_path = NULL,
-#ifdef FIFTYONEDEGREES_H_PATTERN_INCLUDED
-		.data_set = { },
-#endif
-		.cache_size = 0,
-	},
-#endif
-	/* others NULL OK */
-};
+extern struct global global;
 
 /*********************************************************************/
 
-int stopping;	/* non zero means stopping in progress */
-int jobs = 0;   /* number of active jobs (conns, listeners, active tasks, ...) */
+extern int stopping;	/* non zero means stopping in progress */
+extern int jobs;   /* number of active jobs (conns, listeners, active tasks, ...) */
 
 /* Here we store informations about the pids of the processes we may pause
  * or kill. We will send them a signal every 10 ms until we can bind to all
  * our ports. With 200 retries, that's about 2 seconds.
  */
 #define MAX_START_RETRIES	200
-static int *oldpids = NULL;
-static int oldpids_sig; /* use USR1 or TERM */
+extern int *oldpids;
+extern int oldpids_sig; /* use USR1 or TERM */
 
-/* this is used to drain data, and as a temporary buffer for sprintf()... */
-struct chunk trash = { };
-
-/* this buffer is always the same size as standard buffers and is used for
- * swapping data inside a buffer.
- */
-char *swap_buffer = NULL;
-
-int nb_oldpids = 0;
-const int zero = 0;
-const int one = 1;
-const struct linger nolinger = { .l_onoff = 1, .l_linger = 0 };
-
-char hostname[MAX_HOSTNAME_LEN];
-char localpeer[MAX_HOSTNAME_LEN];
-
-/* used from everywhere just to drain results we don't want to read and which
- * recent versions of gcc increasingly and annoyingly complain about.
- */
-int shut_your_big_mouth_gcc_int = 0;
-
-/* list of the temporarily limited listeners because of lack of resource */
-struct list global_listener_queue = LIST_HEAD_INIT(global_listener_queue);
-struct task *global_listener_queue_task;
-static struct task *manage_global_listener_queue(struct task *t);
-
-/* bitfield of a few warnings to emit just once (WARN_*) */
-unsigned int warned = 0;
 
 /*
  * Local variables:
