@@ -815,7 +815,7 @@ install-bin: haproxy $(EXTRA)
 	install -d "$(DESTDIR)$(SBINDIR)"
 	install -d "$(DESTDIR)$(LIBDIR)"
 	install libhaproxy.so.$(VERSION) "$(DESTDIR)$(LIBDIR)"
-	ln -rs "$(DESTDIR)$(LIBDIR)/libhaproxy.so.$(VERSION)" "$(DESTDIR)$(LIBDIR)/libhaproxy.so.1"
+	ln -frs "$(DESTDIR)$(LIBDIR)/libhaproxy.so.$(VERSION)" "$(DESTDIR)$(LIBDIR)/libhaproxy.so.1"
 	install haproxy $(EXTRA) "$(DESTDIR)$(SBINDIR)"
 
 install: install-bin install-man install-doc
