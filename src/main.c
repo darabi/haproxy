@@ -30,6 +30,8 @@
 int main(int argc, char **argv)
 {
 	haproxy_main(argc, argv);
+
+	exit(0);
 }
 
 
