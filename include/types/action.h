@@ -140,6 +140,7 @@ struct act_rule {
 			int idx;
 		} capid;
 		struct hlua_rule *hlua_rule;
+		struct cffi_rule *cffi_rule;
 		struct {
 			struct sample_expr *expr;
 			const char *name;
