@@ -91,6 +91,7 @@
 #include <proto/fd.h>
 #include <proto/hdr_idx.h>
 #include <proto/hlua.h>
+#include <proto/cffi.h>
 #include <proto/listener.h>
 #include <proto/log.h>
 #include <proto/pattern.h>

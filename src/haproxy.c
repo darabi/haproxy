@@ -460,10 +460,18 @@ int init(int argc, char **argv)
 	char *tmp;
 	char *cfg_pidfile = NULL;
 	int err_code = 0;
-	struct wordlist *wl;
+	struct wordlist *wl, *wlb;
 	char *progname;
 	char *change_dir = NULL;
 	struct tm curtime;
+
+	list_for_each_entry_safe(wl, wlb, &cfg_cfgfiles, list) {
+		LIST_DEL(&wl->list);
+		free(wl);
+	}
+	// this is an empty circular list as initialised at the top of this file
+	cfg_cfgfiles.n = &cfg_cfgfiles;
+	cfg_cfgfiles.p = &cfg_cfgfiles;
 
 	chunk_init(&trash, malloc(global.tune.bufsize), global.tune.bufsize);
 	alloc_trash_buffers(global.tune.bufsize);
@@ -510,6 +518,8 @@ int init(int argc, char **argv)
 
 	/* Initialise lua. */
 	hlua_init();
+	/* Initialise cffi. */
+	cffi_init();
 
 	global.tune.options |= GTUNE_USE_SELECT;  /* select() is always available */
 #if defined(ENABLE_POLL)
@@ -1051,6 +1061,8 @@ int init(int argc, char **argv)
 	/* initialize structures for name resolution */
 	if (!dns_init_resolvers())
 		return 1;
+
+	return 0;
 }
 
 static void deinit_acl_cond(struct acl_cond *cond)
@@ -1838,6 +1850,8 @@ int haproxy_main(int argc, char **argv)
 
 	/* Do some cleanup */ 
 	deinit();
+
+	return 0;
 }
 
 

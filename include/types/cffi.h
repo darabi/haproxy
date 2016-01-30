@@ -1,10 +1,5 @@
-#ifndef _TYPES_HLUA_H
-#define _TYPES_HLUA_H
-
-#ifdef USE_LUA
-
-#include <lua.h>
-#include <lauxlib.h>
+#ifndef _TYPES_CFFI_H
+#define _TYPES_CFFI_H
 
 #include <types/proxy.h>
 #include <types/server.h>
@@ -41,25 +36,7 @@ enum hlua_exec {
 	HLUA_E_ERR,    /* LUA stack execution failed without error message. */
 };
 
-struct hlua {
-	lua_State *T; /* The LUA stack. */
-	int Tref; /* The reference of the stack in coroutine case.
-	             -1 for the main lua stack. */
-	int Mref; /* The reference of the memory context in coroutine case.
-	             -1 if the memory context is not used. */
-	int nargs; /* The number of arguments in the stack at the start of execution. */
-	unsigned int flags; /* The current execution flags. */
-	int wake_time; /* The lua wants to be waked at this time, or before. */
-	unsigned int max_time; /* The max amount of execution time for an Lua process, in ms. */
-	unsigned int start_time; /* The ms time when the Lua starts the last execution. */
-	unsigned int run_time; /* Lua total execution time in ms. */
-	struct task *task; /* The task associated with the lua stack execution.
-	                      We must wake this task to continue the task execution */
-	struct list com; /* The list head of the signals attached to this task. */
-	struct ebpt_node node;
-};
-
-struct hlua_com {
+struct cffi_com {
 	struct list purge_me; /* Part of the list of signals to be purged in the
 	                         case of the LUA execution stack crash. */
 	struct list wake_me; /* Part of list of signals to be targeted if an
@@ -67,21 +44,13 @@ struct hlua_com {
 	struct task *task; /* The task to be wake if an event occurs. */
 };
 
-/* This is a part of the list containing references to functions
- * called at the initialisation time.
- */
-struct hlua_init_function {
-	struct list l;
-	int function_ref;
-};
-
 /* This struct contains the lua data used to bind
- * Lua function on HAProxy hook like sample-fetches
+ * a C function on HAProxy hook like sample-fetches
  * or actions.
  */
-struct hlua_function {
+struct cffi_function {
 	char *name;
-	int function_ref;
+	void *function_ref;
 };
 
 /* This struct is used with the structs:
@@ -90,59 +59,9 @@ struct hlua_function {
  *  - tcp_rule
  * It contains the lua execution configuration.
  */
-struct hlua_rule {
-	struct hlua_function fcn;
+struct cffi_rule {
+	struct cffi_function fcn;
 	char **args;
 };
 
-/* This struct contains the pointer provided on the most
- * of internal HAProxy calls during the processing of
- * rules, converters and sample-fetches. This struct is
- * associated with the lua object called "TXN".
- */
-struct hlua_txn {
-	struct stream *s;
-	struct proxy *p;
-	int dir;                /* SMP_OPT_DIR_{REQ,RES} */
-};
-
-/* This struct contains the applet context. */
-struct hlua_appctx {
-	struct appctx *appctx;
-	luaL_Buffer b; /* buffer used to prepare strings. */
-	struct hlua_txn htxn;
-};
-
-/* This struc is used with sample fetches and sample converters. */
-struct hlua_smp {
-	struct stream *s;
-	struct proxy *p;
-	unsigned int flags;     /* LUA_F_OPT_* */
-	int dir;                /* SMP_OPT_DIR_{REQ,RES} */
-};
-
-/* This struct contains data used with sleep functions. */
-struct hlua_sleep {
-	struct task *task; /* task associated with sleep. */
-	struct list com; /* list of signal to wake at the end of sleep. */
-	unsigned int wakeup_ms; /* hour to wakeup. */
-};
-
-/* This struct is used to create coprocess doing TCP or
- * SSL I/O. It uses a fake stream.
- */
-struct hlua_socket {
-	struct stream *s; /* Stream used for socket I/O. */
-	luaL_Buffer b; /* buffer used to prepare strings. */
-};
-
-#else /* USE_LUA */
-
-/* Empty struct for compilation compatibility */
-struct hlua { };
-struct hlua_socket { };
-struct hlua_rule { };
-
-#endif /* USE_LUA */
-
-#endif /* _TYPES_HLUA_H */
+#endif /* _TYPES_CFFI_H */

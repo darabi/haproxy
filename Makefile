@@ -732,7 +732,7 @@ else
 all: haproxy $(EXTRA)
 endif
 
-OBJS = src/main.o src/haproxy.o src/base64.o src/protocol.o \
+OBJS = src/main.o src/cffi.o src/haproxy.o src/base64.o src/protocol.o \
        src/uri_auth.o src/standard.o src/buffer.o src/log.o src/task.o \
        src/chunk.o src/channel.o src/listener.o src/lru.o src/xxhash.o \
        src/time.o src/fd.o src/pipe.o src/regex.o src/cfgparse.o src/server.o \
@@ -762,7 +762,7 @@ LIB_EBTREE = $(EBTREE_DIR)/libebtree.a
 
 haproxy: $(OBJS) $(OPTIONS_OBJS) $(EBTREE_OBJS)
 	$(LD) -shared -Wl,-soname,libhaproxy.so.1 -L. $(LDFLAGS) -o libhaproxy.so.$(VERSION) $^ $(LDOPTS)
-	ln -s libhaproxy.so.$(VERSION) libhaproxy.so
+	ln -fs libhaproxy.so.$(VERSION) libhaproxy.so
 	$(LD) $(LDFLAGS) -L. -o $@ src/main.o -lhaproxy $(LDOPTS)
 
 haproxy-systemd-wrapper: $(WRAPPER_OBJS)
