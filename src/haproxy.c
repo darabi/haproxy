@@ -1851,7 +1851,7 @@ int haproxy_main(int argc, char **argv)
 	/* Do some cleanup */ 
 	deinit();
 
-	return 0;
+	exit(0);
 }
 
 
